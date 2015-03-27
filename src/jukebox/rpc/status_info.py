@@ -4,33 +4,53 @@ from jukebox.downloader import downloader
 from globals import player
 from helpers import metadata
 
-def status_info(request):
-    objects = QueueItem.objects.all()
-    items = [{
-        "id": x.id, 
-        "url": x.what.url, 
-        "username": x.who, 
-        "index": x.index } for x in objects]
-    itemsMeta = [metadata(x.what) for x in objects]
-    if len(items)>0:
-        first = (items[0], itemsMeta[0])
-    else:
-        first = (None, None)
+def serialize_queue(queue):
+    timeToStart = 0
+    items = []
+    current = queue[0]
+    for q in queue:
+        item = {
+            "id": q.id,
+            "url": q.what.url,
+            "username": q.who,
+            "index": q.index,
+            "timeToStart": timeToStart
+        }
+        if q.what.got_metadata and timeToStart != None:
+            timeToStart += q.what.trackLength
+            if q == current and player.elapsed():
+                timeToStart -= player.elapsed()
+        else:
+            timeToStart = None
+        items.append(item)
+    return items
 
-    elapsed = player.elapsed()
+def get_items():
+    objects = QueueItem.objects.all()
+    if objects.count():
+        items = serialize_queue(objects)
+        itemsMeta = [metadata(x.what) for x in objects]
+        return items, itemsMeta
+    else:
+        return [None], [None]
+
+def get_state():    
     current = QueueItem.current()
     if current!=None and current.what in downloader.downloads():
-        state = "caching"
+        return "caching"
     else:
-        state = player.status.name()
+        return player.status.name()
 
+def status_info(request):
+    items, itemsMeta = get_items()
+    first = (items[0], itemsMeta[0])
     return {
-        "status":state,
+        "status": get_state(),
         "entry":first[0],
         "info": first[1],
         "queue": items[1:],
         "queueInfo": itemsMeta[1:],
         "paused": player.status != Status.playing,
-        "elapsedTime": elapsed,
+        "elapsedTime": player.elapsed(),
         "downloads": [x.url for x in downloader.downloads()]
     }

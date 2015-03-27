@@ -15,6 +15,7 @@
         <script type="text/javascript" src="static/notify.js" />
 
         <script type="text/javascript" src="static/client.js" />
+        <script type="text/javascript" src="static/viewmodels/time.js" />
         <script type="text/javascript" src="static/viewmodels/volume.js" />
         <script type="text/javascript" src="static/viewmodels/progress.js" />
         <script type="text/javascript" src="static/viewmodels/user.js" />
@@ -150,9 +151,12 @@
                 <div style="clear: right;" />
                 <ol data-bind="foreach: items">
                     <li class="item">
-                        <div data-bind="with: metadata">
-                            <div class="trackName name" data-bind="text: trackName" />
-                            <div class="metadata">
+                        <div>
+                            <div class="trackName name" data-bind="text: metadata.trackName" />
+                            <div class="time-to-start" data-bind="visible: timeToStart">
+                                Will play <span data-bind="text: timeToStart" />
+                            </div>
+                            <div class="metadata" data-bind="with: metadata">
                                 <span data-bind="visible: trackNumber">
                                     Track <span data-bind="text: trackNumber" />
                                 </span>

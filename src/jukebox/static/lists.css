@@ -36,18 +36,20 @@ ol li .name {
     font-size: 12pt;    
     color: white;
 }
-ol li .metadata {
+ol li .metadata, ol li .time-to-start {
     font-size: 8pt;
     color: rgb(210, 210, 210);
     padding-top: 1px;
+}
+ol li .time-to-start {
+    float: right;
 }
 ol li .controls {
     display: table;
     position: absolute;
     right: 8px;
-    top: 50%;
+    top: 6px;
     height: 20px;
-    margin-top: -10px;
     font-size: 10pt;
     color: white;
 }

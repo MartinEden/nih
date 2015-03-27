@@ -4,6 +4,20 @@ function QueueItem(item, info, queue) {
     this.id  = ko.observable(item.id);
     this.who = ko.observable(item.username);
     this.url = ko.observable(item.url);
+    this.secondsToStart = ko.observable(item.timeToStart);
+
+    this.startTime = ko.computed(function() {
+        var t = new Date();
+        t.setSeconds(t.getSeconds() + this.secondsToStart());
+        return t;
+    }, this);
+    this.timeToStart = ko.computed(function() {
+        if (this.secondsToStart()) {
+            return moment(this.startTime()).from(new Date());
+        } else {
+            return "";
+        }
+    }, this);
 
     this.metadata = new Metadata(item.url, info);
 }
