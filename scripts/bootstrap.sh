@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 git submodule update --init --recursive
-sudo apt-get install python-pip python-musicbrainz2 python-alsaaudio python-mysqldb mysql-server python-gst0.1 python-virtualenv
+sudo apt-get install python-pip python-musicbrainz2 python-alsaaudio couchdb python-gst0.1 python-virtualenv
 python scripts/generate-virtualenv-bootstrap.py
 
 if [ ! -d "ENV" ]; then
@@ -12,4 +12,5 @@ source "$(pwd)/ENV/bin/activate"
 python scripts/setupdb.py
 echo ""
 echo "Bootstrapped successfully"
-echo "Run 'python src/manage.py runserver' to start the development server"
+echo "Run 'source ENV/bin/activate' to activate the Virtualenv environment"
+echo "and then 'python src/manage.py runserver' to start the development server"

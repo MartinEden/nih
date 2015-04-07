@@ -7,7 +7,7 @@ from time import mktime
 
 def chat_history(request, limit):
     ret = []
-    for item in ChatItem.objects.all()[:limit]:
+    for item in ChatItem.view("jukebox/all_chatitems", limit = 10):
         msg = { 
             "when": mktime(item.when.timetuple()),
             "what": item.what

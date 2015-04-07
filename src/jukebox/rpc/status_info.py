@@ -26,7 +26,7 @@ def serialize_queue(queue):
     return items
 
 def get_items():
-    objects = QueueItem.objects.all()
+    objects = QueueItem.view("jukebox/all_queueitems")
     if objects.count():
         items = serialize_queue(objects)
         itemsMeta = [metadata(x.what) for x in objects]

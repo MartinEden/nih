@@ -9,7 +9,7 @@ known_extensions = [".mp3", ".ogg", ".flac", ".wma", ".m4a"]
 
 class Spider(BackgroundTask):
     def startup(self):
-        for x in WebPath.objects.filter(checked=False, failed=False):
+        for x in WebPath.view("jukebox/to_spider"):
             self.add(x)
 
     def processItem(self, current):

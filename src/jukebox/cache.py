@@ -38,7 +38,7 @@ def albumArt(item):
 
 if not exists(cacheFolder):
     mkdir(cacheFolder)
-for x in QueueItem.objects.all():
+for x in QueueItem.view("jukebox/all_queueitems"):
     try:
         cached(x.what)
     except MusicFile.DoesNotExist:

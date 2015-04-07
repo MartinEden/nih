@@ -1,10 +1,11 @@
-from django.db import models
 from hashlib import md5
 from django.core.signals import request_started
 from utils import runStartupTasks
+from couchdbkit.ext.django.schema import *
+from datetime import datetime
 
-class WebPath(models.Model):
-    url = models.TextField()
+class WebPath(Document):
+    url = StringProperty()
     
     def __unicode__(self):
         if self.checked:
@@ -14,10 +15,10 @@ class WebPath(models.Model):
         else:
             return "Unchecked url: %s"%self.url
 
-    checked = models.BooleanField(default=False)
-    failed = models.BooleanField(default=False)
+    checked = BooleanProperty(default=False)
+    failed = BooleanProperty(default=False)
 
-    root = models.ForeignKey('self', null=True, blank=True)
+    root = StringProperty()
 
     @staticmethod
     def add_root(url):
@@ -38,9 +39,9 @@ class WebPath(models.Model):
     def get_root_nodes():
         return WebPath.objects.exclude(root__isnull =False)
 
-class MusicFile(models.Model):
-    url = models.TextField()
-    parent = models.ForeignKey(WebPath)
+class MusicFile(Document):
+    url = StringProperty()
+    parent = StringProperty(WebPath)
 
     def __unicode__(self):
         if self.got_metadata:
@@ -48,24 +49,28 @@ class MusicFile(models.Model):
         else:
             return "Unchecked url: %s"%self.url
 
-    failed = models.BooleanField(default=False)
-    got_metadata = models.BooleanField(default=False)
-    artist = models.CharField(max_length=200)
-    album = models.CharField(max_length=200)
-    title = models.CharField(max_length=200)
-    trackLength = models.IntegerField(blank=True, null=True)
-    trackNumber = models.CharField(max_length=50)
+    failed = BooleanProperty(default=False)
+    got_metadata = BooleanProperty(default=False)
+    artist = StringProperty()
+    album = StringProperty()
+    title = StringProperty()
+    trackLength = IntegerProperty()
+    trackNumber = StringProperty()
 
     def hash(self):
         return md5(self.url).hexdigest()
 
-class ChatItem(models.Model):
-    what = models.CharField(max_length=200)
-    when = models.DateTimeField(auto_now_add=True)
-    who = models.CharField(max_length=200, null=True, blank=True)
+class DateTimePropertyWithNow(DateTimeProperty):
+    def default_value(self):
+        return datetime.now()
 
-    info = models.ForeignKey('MusicFile', null=True, blank=True)
-    message = models.CharField(max_length=1024)
+class ChatItem(Document):
+    what = StringProperty()
+    when = DateTimePropertyWithNow(required = True)
+    who = StringProperty()
+
+    info = StringProperty()
+    message = StringProperty()
 
     class Meta:
         ordering = ["-when", "-id"]
@@ -78,14 +83,14 @@ class ChatItem(models.Model):
             ret += self.message
         return ret + ">"
 
-class QueueItem(models.Model):
-    who = models.CharField(max_length=200)
-    what = models.ForeignKey('MusicFile')
-    index = models.FloatField()    
+class QueueItem(Document):
+    who = StringProperty()
+    what = StringProperty('MusicFile')
+    index = FloatProperty()
 
     @staticmethod
     def current():
-        items = QueueItem.objects.all()[:1]
+        items = QueueItem.view("jukebox/all_queueitems")[:1]
         if len(items) == 0:
             return None
         else:
