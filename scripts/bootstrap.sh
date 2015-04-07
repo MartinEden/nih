@@ -1,9 +1,14 @@
 #!/bin/bash
 set -e
 git submodule update --init --recursive
-apt-get install python-pip python-musicbrainz2 python-alsaaudio python-magic python-mysqldb mysql-server python-gst0.1
-pip install django==1.3.1 django-nose South mutagen BeautifulSoup django-genshi requests
+sudo apt-get install python-pip python-musicbrainz2 python-alsaaudio python-mysqldb mysql-server python-gst0.1 python-virtualenv
+python scripts/generate-virtualenv-bootstrap.py
 
+if [ ! -d "ENV" ]; then
+	python virtualenv-bootstrap.py ENV
+fi
+
+source "$(pwd)/ENV/bin/activate"
 python scripts/setupdb.py
 echo ""
 echo "Bootstrapped successfully"
