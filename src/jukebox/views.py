@@ -1,6 +1,6 @@
 from django_genshi import render_to_response
 from django.conf import settings
-from spider import spider
+#from spider import spider
 from models import *
 
 def _index_data(request):

@@ -1,12 +1,27 @@
+from __future__ import absolute_import
 from hashlib import md5
 from django.core.signals import request_started
 from utils import runStartupTasks
 from couchdbkit.ext.django.schema import *
 from datetime import datetime
 
-class WebPath(Document):
-    url = StringProperty()
-    
+class URLIdDocument(Document):
+    def __setattr__(self, key, value):
+        if key == "url":
+            self.__setattr__("_id", value)
+        else:
+            Document.__setattr__(self, key, value)
+
+    def __getattr__(self, key):
+        if key == "url":
+            return self._id
+        else:
+            return Document.__getattr__(self, key)
+
+    def __str__(self):
+        return "<%s: %s>" %(self.__class__, self.url)
+
+class WebPath(URLIdDocument):
     def __unicode__(self):
         if self.checked:
             return "Checked url: %s"%self.url
@@ -18,30 +33,34 @@ class WebPath(Document):
     checked = BooleanProperty(default=False)
     failed = BooleanProperty(default=False)
 
+    parent = StringProperty()
     root = StringProperty()
 
+    def get_root(self):
+        if self.root == None:
+            return self.url
+        else:
+            return self.root
+
     @staticmethod
-    def add_root(url):
-        wp = WebPath(url = url, root = None)
-        wp.save()
-        print "saved root"
-        return wp
+    def to_spider():
+        return WebPath.view("jukebox/to_spider", include_docs = True, classes={None: Document, 'WebPath': WebPath})
 
     def add_child(self, url):
-        if self.root == None: # assume we're root
-            wp = WebPath(root = self, url = url)
-        else:
-            wp = WebPath(root = self.root, url = url)
+        wp = WebPath(root = self.get_root(), url = url)
         wp.save()
         return wp
 
     @staticmethod
     def get_root_nodes():
-        return WebPath.objects.exclude(root__isnull =False)
+        return WebPath.view("jukebox/root_nodes")
 
-class MusicFile(Document):
+class SpideringPath(Document):
     url = StringProperty()
+
+class MusicFile(URLIdDocument):
     parent = StringProperty(WebPath)
+    root = StringProperty()
 
     def __unicode__(self):
         if self.got_metadata:

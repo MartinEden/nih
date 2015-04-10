@@ -1,7 +1,6 @@
 from jsonrpc import jsonrpc_method
 from jsonrpc.site import JSONRPCSite
 from models import *
-from spider import spider
 from utils import urlopen
 from time import time
 
@@ -10,15 +9,17 @@ site = JSONRPCSite()
 @jsonrpc_method("all_roots", site=site)
 def all_roots(request):
     ret = []
-    for root in WebPath.get_root_nodes():
-        ret.append({"url":root.url, "count":MusicFile.objects.filter(url__startswith=root.url).count()})
+    items = WebPath.view("jukebox/root_counts", wrap_doc=False, group=True)
+    print "counts", items
+    for root in items:
+        ret.append({"url":root['key'], "count":root['value']})
     return sorted(ret, key=lambda x: x['url'])
 
 @jsonrpc_method("current_rescans", site=site)
 def current_rescans(request):
     ret = []
     for root in WebPath.get_root_nodes():
-        if WebPath.objects.filter(checked = False, failed=False,url__startswith=root.url).count()>0:
+        if len([x for x in WebPath.to_spider() if hasattr(x, "url") and x.url == root.url]) > 0:
             ret.append(root.url)
     return sorted(ret)
 
@@ -27,15 +28,14 @@ def rescan_root(request, root):
     result = "success"
     for x in WebPath.get_root_nodes():
         if x.url == root:
-            spider.pause()
-            x.delete()
-            spider.add(WebPath.add_root(root))
-            spider.unpause()
+            SpideringPath(url = x.url).save()
             break
     else:
         try:
             urlopen(root)
-            spider.add(WebPath.add_root(url=root))
+            wp = WebPath(url = root, root = None)
+            wp.save()
+            SpideringPath(url = root).save()
         except Exception, e:
             print "don't like", root, e
             print request.META
@@ -51,14 +51,12 @@ def rescan_root(request, root):
 def remove_root(request, root):
     for x in WebPath.get_root_nodes():
         if x.url == root:
-            spider.pause()
             start = time()
             print "deleting", root, x
             MusicFile.objects.filter(parent__root = x).delete()
             WebPath.objects.filter(root = x).delete()
             x.delete()
             print "deleted", time()-start
-            spider.unpause()
             break
     
     return all_roots(request)

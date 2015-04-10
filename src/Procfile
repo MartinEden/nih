@@ -1,0 +1,2 @@
+web: python manage.py runserver
+spider: PYTHONUNBUFFERED=true DJANGO_SETTINGS_MODULE=settings python -m jukebox.spider
