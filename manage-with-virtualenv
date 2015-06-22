@@ -1,0 +1,9 @@
+#!/usr/bin/python
+
+activate_this = 'ENV/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
+
+from src.manage import settings
+from django.core.management import execute_manager
+execute_manager(settings)
+
