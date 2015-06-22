@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 git submodule update --init --recursive
-sudo apt-get install python-pip python-musicbrainz2 python-alsaaudio python-mysqldb mysql-server python-gst0.1 python-virtualenv
+sudo apt-get install python-pip python-musicbrainz2 python-alsaaudio python-mysqldb mysql-server python-gst0.10 gstreamer0.10-plugins-base python-virtualenv
 python scripts/generate-virtualenv-bootstrap.py
 
 if [ ! -d "ENV" ]; then
