@@ -3,7 +3,12 @@
 activate_this = 'ENV/bin/activate_this.py'
 execfile(activate_this, dict(__file__=activate_this))
 
-from src.manage import settings
+import sys
+from os.path import abspath
+
+sys.path.append(abspath("src"))
+
+from manage import settings
 from django.core.management import execute_manager
 execute_manager(settings)
 
