@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from django.core.management import execute_manager
+from django.core import management 
 try:
     import settings # Assumed to be in the same directory.
 except ImportError:
@@ -8,4 +8,4 @@ except ImportError:
     sys.exit(1)
 
 if __name__ == "__main__":
-    execute_manager(settings)
+     management.execute_from_command_line()

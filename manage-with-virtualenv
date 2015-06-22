@@ -5,10 +5,9 @@ execfile(activate_this, dict(__file__=activate_this))
 
 import sys
 from os.path import abspath
-
+import os
 sys.path.append(abspath("src"))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
-from manage import settings
-from django.core.management import execute_manager
-execute_manager(settings)
-
+from django.core import management 
+management.execute_from_command_line(sys.argv)

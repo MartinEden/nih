@@ -91,7 +91,7 @@ ROOT_URLCONF = 'urls'
 CACHE_FOLDER = "/tmp/nih-cache"
 
 TEMPLATE_DIRS = (
-    site_path('jukebox/templates')
+    site_path('jukebox/templates'),
 )
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO_URL = 'https://github.com/lshift/nih/'
@@ -120,7 +120,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.contenttypes', # only here for the admin
     'jsonrpc',
-    'south',
     'django_nose',
     'jukebox'
 )
