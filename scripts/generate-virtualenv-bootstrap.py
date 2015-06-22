@@ -6,6 +6,8 @@ def after_install(options, home_dir):
     if not os.path.exists(etc):
         os.makedirs(etc)
     subprocess.call([join(home_dir, 'bin', 'pip'),
+                     'install', '-U', 'pip'])
+    subprocess.call([join(home_dir, 'bin', 'pip'),
                      'install', '-r', 'scripts/requirements.txt'])
 
 def extend_parser(optparse_parser):
