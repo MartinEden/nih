@@ -1,5 +1,7 @@
 from player import Player
 import unittest
+import threading
+import gobject
 
 class Looper(threading.Thread):
     def __init__(self):
