@@ -2,6 +2,7 @@ from utils import urlopen, URLError, BackgroundTask, registerStartupTask
 from os.path import join
 from models import *
 from simple_player import Status
+from django.conf import settings
 
 class Downloader(BackgroundTask):
     def processItem(self,item):
@@ -34,5 +35,8 @@ class Downloader(BackgroundTask):
             ret = list(self.queue)
             return ret
 
-downloader = registerStartupTask(Downloader)
 
+if settings.TESTING:
+    downloader = Downloader()
+else:
+    downloader = registerStartupTask(Downloader)

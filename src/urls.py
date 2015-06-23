@@ -9,6 +9,8 @@ from django.conf import settings
 from utils import site_path
 import jukebox.jsonfuncs
 import jukebox.configfuncs
+import logging
+logger = logging.getLogger(__name__)
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
@@ -22,8 +24,8 @@ urlpatterns = [
     url(r'^rpc/jukebox', jukebox.jsonfuncs.site.dispatch, name="jsonrpc_mountpoint"),
     url(r'^rpc/config', jukebox.configfuncs.site.dispatch, name="jsonrpc_mountpoint")
 ]
-print "opened urls.py"
-print jukebox.jsonfuncs.site
+logger.info("opened urls.py")
+logger.info(jukebox.jsonfuncs.site)
 
 #One time startup
 #http://stackoverflow.com/questions/6791911/execute-code-when-django-starts-once-only

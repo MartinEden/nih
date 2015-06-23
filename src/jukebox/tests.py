@@ -7,6 +7,8 @@ from time import sleep
 import utils
 from spider import spider
 from downloader import downloader
+import logging
+logger = logging.getLogger(__name__)
 
 class JukeboxTest(TestCase):
     static_path = "http://localhost/static/"
@@ -30,12 +32,18 @@ class JukeboxTest(TestCase):
 
     def needs_static(self):
         while len(spider.todo())>0:
-            print "spider todo", spider.todo()
+            if not spider.isAlive():
+                logger.info("starting spider")
+                spider.start()
+            logger.info("spider todo %s" % spider.todo())
             sleep(.5)
 
     def needs_downloaded(self):
         while len(downloader.todo())>0:
-            print "downloader todo", downloader.todo()
+            if not downloader.isAlive():
+                logger.info("starting downloader")
+                downloader.start()
+            logger.debug("downloader todo %s"% downloader.todo())
             sleep(.5)
 
 class MainFunctions(JukeboxTest):
@@ -135,7 +143,7 @@ class MainFunctions(JukeboxTest):
         (url2, _) = self._enqueueRealTrack()
 
         self.needs_downloaded()
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertNotEqual(res['entry'], None, res)
         self.assertEqual(res['entry']['url'], url, res)
         self.assertEqual(res['paused'], False, res)
@@ -150,11 +158,11 @@ class MainFunctions(JukeboxTest):
     def testPlay(self):
         self.clear_queue()
 
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertEqual(res['entry'], None, res)
         (url, _) = self._enqueueRealTrack()
         self.needs_downloaded()
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertEqual(res['paused'], False, res)
         self.assertEqual(res['status'], "playing", res)
 
@@ -166,7 +174,7 @@ class MainFunctions(JukeboxTest):
         (url, _) = self._enqueueTestTrack()
         (url2, _) = self._enqueueTestTrack()
 
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertNotEqual(res['entry'], None, res)
         self.assertEqual(res['entry']['url'], url, res)
         res = self._method("skip", "test_user")
@@ -189,7 +197,7 @@ class MainFunctions(JukeboxTest):
 
     def testPlayOnAdd(self): 
         self.clear_queue()
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertEqual(res['status'], "idle", res)
         self.assertEqual(res['entry'], None, res)
         self.assertEqual(res['queue'], [], res)

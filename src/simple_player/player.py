@@ -72,14 +72,14 @@ class Player:
                             self.waiting_for_state_update = False
                             self.state_lock.notifyAll()
         elif t == gst.MESSAGE_STREAM_STATUS:
-            print "stream status", message
+            logdebug("stream status %s" % message)
         else:
-            print "unhandled message", t
+            logger.info("unhandled message %s" % t)
 
         return gst.BUS_PASS
 
     def next_track(self):
-        print "next track"
+        logdebug("next track")
 
     def elapsed(self):
         if self.status == Status.idle:
@@ -93,7 +93,7 @@ class Player:
                 return elapsed / gst.SECOND
             else:
                 if self.debug:
-                    logdebug("bad state", current)
+                    logdebug("bad state %s" % current)
                 return None
 
     def _set_internal_state(self,state):

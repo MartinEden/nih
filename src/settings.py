@@ -1,11 +1,14 @@
 # Django settings for nih project.
 
-import os
+import os, sys
 from utils import site_path
 from db_settings import db
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+DEBUG_PROPAGATE_EXCEPTIONS = DEBUG
+
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -30,7 +33,8 @@ DATABASES = {
 import sys
 if 'test' in sys.argv or 'test_coverage' in sys.argv: #Covers regular testing and django-coverage
     DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
-    DATABASES['default']['name'] = ':memory:'
+    DATABASES['default']['NAME'] = site_path('default.db')
+    DATABASES['default']['TEST'] = {'NAME' :site_path('test.db')}
     del DATABASES['default']['OPTIONS']
 
 # Local time zone for this installation. Choices can be found here:
@@ -110,7 +114,7 @@ TEMPLATE_CONTEXT_PROCESSORS = ("django.contrib.auth.context_processors.auth",
 "django.core.context_processors.request"
 )
 
-TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+#TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 NOSE_ARGS = ["--with-coverage", "--cover-package=nih.jukebox, simple_player", "--cover-html", "--cover-html-dir=coverage"]
 
 LASTFM_USER="test_erlang"
@@ -132,7 +136,7 @@ INSTALLED_APPS = (
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
@@ -141,10 +145,19 @@ LOGGING = {
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
     'handlers': {
         'console': {
-            'level': 'INFO',
-            'filters': ['require_debug_true'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            #'filters': ['require_debug_true'],
+            'formatter': 'verbose',
             'class': 'logging.StreamHandler',
         },
         'null': {
@@ -158,7 +171,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'level':'INFO',
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             'handlers': ['console'],
         },
         'django.request': {
@@ -176,6 +189,11 @@ LOGGING = {
         },
         'django.db.backends.schema': {
             'handlers': ['null']
+            #'handlers': ['console']
+        },
+        'jukebox': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'handlers': ['console']
         }
     }
 }

@@ -4,6 +4,10 @@ from utils import urlopen, URLError, BackgroundTask, registerStartupTask
 from urlparse import urljoin
 from os.path import splitext
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
+
+import logging
+logger = logging.getLogger(__name__)
 
 known_extensions = [".mp3", ".ogg", ".flac", ".wma", ".m4a"]
 
@@ -16,14 +20,14 @@ class Spider(BackgroundTask):
         try:
             test = current.root
         except WebPath.DoesNotExist:
-            print "skipping, as no more root!"
+            logger.debug("skipping, as no more root!")
             current.delete()
             return
 
         try:
             page = urlopen(current.url)
         except URLError:
-            print "fail", current.url
+            logger.debug("fail", current.url)
             current.failed = True
             current.save()
             return
@@ -36,10 +40,10 @@ class Spider(BackgroundTask):
                 try:
                     resolved = urljoin(url, link["href"])
                 except KeyError:
-                    print "skipping due to lack of href", link
+                    logger.debug("skipping due to lack of href", link)
                     continue
                 if len(resolved) < len(url): # up link, skip
-                    print "skipping",resolved, url
+                    logger.debug("skipping",resolved, url)
                     continue
                 if resolved[-1] == "/": # directory
                     if WebPath.objects.filter(url=resolved).count() == 0:
@@ -53,7 +57,7 @@ class Spider(BackgroundTask):
                             mf = MusicFile(parent=current, url = resolved)
                             mf.save()
                     else:
-                        print "Can't handle", resolved, ext, len(ext)
+                        logger.debug("can't handle %s %s %s"%(resolved, ext, len(ext)))
 
             current.checked = True
             current.save()
@@ -61,4 +65,7 @@ class Spider(BackgroundTask):
             # we got deleted
             current.delete()
 
-spider = registerStartupTask(Spider)
+if settings.TESTING:
+    spider = Spider()
+else:
+    spider = registerStartupTask(Spider)
