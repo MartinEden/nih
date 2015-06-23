@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test.client import Client
 from jsonrpc._json import loads, dumps
 from uuid import uuid1
-from jukebox.models import *
+from models import *
 from time import sleep
 import utils
 from spider import spider

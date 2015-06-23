@@ -30,6 +30,7 @@ DATABASES = {
 import sys
 if 'test' in sys.argv or 'test_coverage' in sys.argv: #Covers regular testing and django-coverage
     DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
+    DATABASES['default']['name'] = ':memory:'
     del DATABASES['default']['OPTIONS']
 
 # Local time zone for this installation. Choices can be found here:
