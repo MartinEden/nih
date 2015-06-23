@@ -8,6 +8,7 @@ from os.path import abspath
 import os
 sys.path.append(abspath("src"))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+os.chdir("src")
 
 from django.core import management 
 management.execute_from_command_line(sys.argv)
