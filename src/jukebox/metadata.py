@@ -14,7 +14,9 @@ from mutagen.asf import ASF
 from xdg import Mime
 import magic
 
-from musicbrainz2.webservice import *
+# Deprecated (see http://musicbrainz.org/doc/python-musicbrainz2). TODO: replace with https://github.com/alastair/python-musicbrainzngs
+#from musicbrainz2.webservice import *
+
 from urllib2 import urlopen
 
 from PIL import Image
