@@ -8,7 +8,9 @@ def after_install(options, home_dir):
     subprocess.call([join(home_dir, 'bin', 'pip'),
                      'install', '-U', 'pip'])
     subprocess.call([join(home_dir, 'bin', 'pip'),
-                     'install', '-r', 'scripts/requirements.txt'])
+                     'install', '-r', 'scripts/requirements.txt',
+                     '--allow-all-external',
+                     '--allow-unverified', 'PIL'])
 
 def extend_parser(optparse_parser):
 	optparse_parser.remove_option("--no-site-packages")
