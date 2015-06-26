@@ -35,7 +35,7 @@ class JukeboxTest(TransactionTestCase):
             if not spider.isAlive():
                 logger.info("starting spider")
                 spider.start()
-            logger.info("spider todo %s" % spider.todo())
+            logger.info("spider todo %s", spider.todo())
             sleep(.5)
 
     def needs_downloaded(self):
@@ -43,7 +43,7 @@ class JukeboxTest(TransactionTestCase):
             if not downloader.isAlive():
                 logger.info("starting downloader")
                 downloader.start()
-            logger.debug("downloader todo %s"% downloader.todo())
+            logger.debug("downloader todo %s", downloader.todo())
             sleep(.5)
 
 class MainFunctions(JukeboxTest):

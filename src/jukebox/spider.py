@@ -40,10 +40,10 @@ class Spider(BackgroundTask):
                 try:
                     resolved = urljoin(url, link["href"])
                 except KeyError:
-                    logger.debug("skipping due to lack of href", link)
+                    logger.debug("skipping due to lack of href %s", link)
                     continue
                 if len(resolved) < len(url): # up link, skip
-                    logger.debug("skipping",resolved, url)
+                    logger.debug("skipping %s %s", resolved, url)
                     continue
                 if resolved[-1] == "/": # directory
                     if WebPath.objects.filter(url=resolved).count() == 0:
@@ -57,7 +57,7 @@ class Spider(BackgroundTask):
                             mf = MusicFile(parent=current, url = resolved)
                             mf.save()
                     else:
-                        logger.debug("can't handle %s %s %s"%(resolved, ext, len(ext)))
+                        logger.debug("can't handle %s %s %s", resolved, ext, len(ext))
 
             current.checked = True
             current.save()
