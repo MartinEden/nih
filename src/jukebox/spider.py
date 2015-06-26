@@ -67,5 +67,6 @@ class Spider(BackgroundTask):
 
 if settings.TESTING:
     spider = Spider()
+    spider.setDaemon(True)
 else:
     spider = registerStartupTask(Spider)

@@ -38,5 +38,6 @@ class Downloader(BackgroundTask):
 
 if settings.TESTING:
     downloader = Downloader()
+    downloader.setDaemon(True)
 else:
     downloader = registerStartupTask(Downloader)
