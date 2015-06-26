@@ -6,6 +6,7 @@ import threading
 import gobject
 from sys import stderr
 from os.path import abspath
+from os import environ
 
 import logging
 logger = logging.getLogger(__name__)
@@ -35,6 +36,10 @@ class Player:
 
     def newPlayer(self):
         self._player = gst.element_factory_make("playbin", "player")
+        if environ.has_key("GST_AUDIO_SINK"):
+            sink = environ["GST_AUDIO_SINK"]
+            self._sink = gst.element_factory_make(sink, "custom-audio-sink " + sink)
+            self._player.set_property("audio-sink", self._sink)
 
     def __del__(self):
         with self.state_lock:
