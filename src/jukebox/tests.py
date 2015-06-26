@@ -187,7 +187,7 @@ class MainFunctions(JukeboxTest):
 
     def testGetUsername(self):
         res = self._method("get_username")
-        self.assertEqual(res, "127.0.0.1")
+        self.assertEqual(res, "localhost")
 
     def testRandom(self):
         self.needs_static()
