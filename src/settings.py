@@ -114,8 +114,8 @@ TEMPLATE_CONTEXT_PROCESSORS = ("django.contrib.auth.context_processors.auth",
 "django.core.context_processors.request"
 )
 
-#TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
-NOSE_ARGS = ["--with-coverage", "--cover-package=nih.jukebox, simple_player", "--cover-html", "--cover-html-dir=coverage"]
+TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+NOSE_ARGS = ["--with-coverage", "--cover-package=nih.jukebox, simple_player", "--cover-html", "--cover-html-dir=coverage", "--with-nosexunitlite"]
 
 LASTFM_USER="test_erlang"
 LASTFM_PASSWORD="test_erlang"
