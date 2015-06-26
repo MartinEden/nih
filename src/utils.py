@@ -19,7 +19,10 @@ class FakeURLObject:
         return self.url
 
     def read(self):
-        return self.backing.content
+        if self.backing.streaming:
+            return "".join(self.backing.streaming_content)
+        else:
+            return self.backing.content
 
 def urlopen(url):
     try:
