@@ -185,8 +185,8 @@ class MainFunctions(JukeboxTest):
 
         downloader.unpause()
 
-    def testGetHostname(self):
-        res = self._method("get_caller_hostname")
+    def testGetUsername(self):
+        res = self._method("get_username")
         self.assertEqual(res, "127.0.0.1")
 
     def testRandom(self):
