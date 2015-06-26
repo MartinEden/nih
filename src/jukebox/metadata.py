@@ -180,9 +180,7 @@ def write_albumart(image_tag, metadata, tags):
 def get_good_mime(music_file):
     mime = Mime.get_type_by_contents(music_file)
     if mime == None: # try magic instead
-        mime = magic.open(magic.MAGIC_MIME)
-        mime.load()
-        mime = mime.file(music_file)
+        mime = magic.from_file(music_file)
         mime = mime.split(";")[0]
     else:
         mime = str(mime)
