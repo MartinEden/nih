@@ -4,13 +4,16 @@ from globals import site, player, post, play_current
 from jukebox.models import QueueItem, ChatItem
 from simple_player import Status
 from status_info import status_info
+import logging
+
+logger = logging.getLogger(__name__)
 
 @jsonrpc_method('skip', site=site)
 def skip(request, username):
     current = QueueItem.current()
     if current != None:
         ChatItem(what="skip", info = current.what, who=username).save()
-        print "saved item"
+        logger.debug("saved item %s", current.what)
         player.next_track()
     return status_info(request)
 

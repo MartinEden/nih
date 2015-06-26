@@ -4,7 +4,9 @@ from models import *
 from spider import spider
 from utils import urlopen
 from time import time
+import logging
 
+logger = logging.getLogger(__name__)
 site = JSONRPCSite()
 
 @jsonrpc_method("all_roots", site=site)
@@ -37,8 +39,7 @@ def rescan_root(request, root):
             urlopen(root)
             spider.add(WebPath.add_root(url=root))
         except Exception, e:
-            print "don't like", root, e
-            print request.META
+            logger.debug("don't like %s %s %s", root, e, request.META)
             result = "failure"
         
     return {
@@ -53,11 +54,11 @@ def remove_root(request, root):
         if x.url == root:
             spider.pause()
             start = time()
-            print "deleting", root, x
+            logger.debug("deleting %s %s", root, x)
             MusicFile.objects.filter(parent__root = x).delete()
             WebPath.objects.filter(root = x).delete()
             x.delete()
-            print "deleted", time()-start
+            logger.debug("deleted %s", time()-start)
             spider.unpause()
             break
     

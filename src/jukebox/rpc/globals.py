@@ -8,6 +8,9 @@ from simple_player import Player, Status
 from helpers import reindex_queue
 from jukebox.cache import cached
 from time import strftime, gmtime
+import logging
+
+logger = logging.getLogger(__name__)
 
 def make_audioscrobbler():
     if settings.LASTFM_ENABLED:
@@ -31,7 +34,7 @@ def next_track():
 def play_current(player):
     toplay = QueueItem.current()
     f = cached(toplay.what)
-    print "toplay", f
+    logging.debug("toplay %s", f)
     if f != None:
         player.play(f)
         song = toplay.what
@@ -42,7 +45,7 @@ def play_current(player):
                  album=song.album,
                  mbid=""
                 )
-        print "track", track
+        logging.debug("track %s", track)
         post(**track)
         ChatItem(what="play", info=song, who=toplay.who).save()
     else:

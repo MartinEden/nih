@@ -4,6 +4,9 @@ from models import *
 from simple_player import Status
 from django.conf import settings
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Downloader(BackgroundTask):
     def processItem(self,item):
         hash = item.hash()
@@ -22,7 +25,7 @@ class Downloader(BackgroundTask):
         from rpc.player import play_current, get_status
         current = QueueItem.current().what
         if item.failed:
-            print "item failed", item
+            logger.info("item failed %s", item)
             char = ChatItem(what="failed", info = item)
             char.save()
             if current == item:

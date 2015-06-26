@@ -70,9 +70,9 @@ class MainFunctions(JukeboxTest):
             m.url = url
             m.parent = root
             m.save()
-            print "added test track", url
+            logger.debug("added test track %s", url)
         else:
-            print "test track already present", url
+            logger.debug("test track already present %s", url)
         return url
 
     def _enqueueTestTrack(self, atTop=False):
@@ -167,7 +167,7 @@ class MainFunctions(JukeboxTest):
         self.assertEqual(res['status'], "playing", res)
 
     def testNotCachedYet(self):
-        print "starting cache test"
+        logger.debug("starting cache test")
         self.clear_queue()
         downloader.pause()
 
@@ -240,7 +240,7 @@ class ConfigTests(JukeboxTest):
         res = self._configmethod("remove_root", self.static_path)
         self.assertEqual(len(res), rootcount - 1)
         for wp in spider.queue:
-            print "q", wp, wp.root
+            logger.debug("still queued %s %s", wp, wp.root)
         spider.unpause()
         self.needs_static()
 
