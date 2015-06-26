@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.test.client import Client
 from jsonrpc._json import loads, dumps
 from uuid import uuid1
@@ -10,7 +10,7 @@ from downloader import downloader
 import logging
 logger = logging.getLogger(__name__)
 
-class JukeboxTest(TestCase):
+class JukeboxTest(TransactionTestCase):
     static_path = "http://localhost/static/"
     test_track_path = static_path+"silent-3mins.mp3"
     def _configmethod(self, method, *params, **kwargs):
