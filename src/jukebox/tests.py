@@ -203,7 +203,7 @@ class MainFunctions(JukeboxTest):
         self.assertEqual(res['queue'], [], res)
 
         self.needs_downloaded()
-        sleep(.2) # wait for gstreamer to catch up
+        sleep(1) # wait for gstreamer to catch up
         (url, _) = self._enqueueTestTrack()
         res = self._method("get_queue")
         self.assertEqual(res['paused'], False, res)
