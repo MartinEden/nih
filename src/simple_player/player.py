@@ -107,6 +107,7 @@ class Player:
         with self.state_lock:
             while self.waiting_for_state_update:
                 logger.debug("waiting for update")
+                self._player.get_state() # Gstreamer is quantum, and so observation causes state change...
                 self.state_lock.wait()
             logger.debug("got update")
         
