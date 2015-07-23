@@ -34,8 +34,8 @@ import sys
 if 'test' in sys.argv or 'test_coverage' in sys.argv: #Covers regular testing and django-coverage
     DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
     DATABASES['default']['NAME'] = site_path('default.db')
-    DATABASES['default']['TEST'] = {'NAME' :site_path('test.db')}
-    del DATABASES['default']['OPTIONS']
+    DATABASES['default']['TEST'] = {'NAME' : site_path('test.db')}
+    DATABASES['default']['OPTIONS'] = {'timeout': 20}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
