@@ -35,6 +35,7 @@ class Player:
         if environ.has_key("GST_AUDIO_SINK"):
             sink = environ["GST_AUDIO_SINK"]
             self._sink = gst.element_factory_make(sink, "custom-audio-sink " + sink)
+            self._sink.set_property("sync", True)
             self._player.set_property("audio-sink", self._sink)
 
     def __del__(self):
