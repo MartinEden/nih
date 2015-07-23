@@ -1,10 +1,11 @@
 from jsonrpc import jsonrpc_method
-from globals import site
+from globals import site, player
 
-from jukebox.cache import cached
+from jukebox.cache import cached, is_cached
 from jukebox.models import QueueItem, MusicFile
 from status_info import status_info
 from helpers import reindex_queue
+from player import play_current, get_status
 
 import logging
 logger = logging.getLogger(__name__)
@@ -27,6 +28,10 @@ def enqueue(request, username, tracks, atTop):
         except IndexError: # nothing else in queue
             q.index = 0
         q.save()
+
+    # Newly queued items get automagically played if the player is idle. This is only needed if they're already cached
+    if is_cached(QueueItem.current().what) and get_status() == Status.idle:
+        play_current(player)
     return status_info(request)
 
 @jsonrpc_method('dequeue', site=site)
