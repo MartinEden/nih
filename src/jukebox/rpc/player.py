@@ -19,6 +19,7 @@ def skip(request, username):
 
 @jsonrpc_method('pause', site=site)
 def pause(request, shouldPause, username):
+    logger.debug("pause request: shouldPause %s, queueitems %s, status %s", shouldPause, QueueItem.objects.count(), player.status)
     current = QueueItem.current()
     if not shouldPause:
         if player.status == Status.idle and QueueItem.objects.count()>0:

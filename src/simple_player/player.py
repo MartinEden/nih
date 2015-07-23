@@ -82,15 +82,16 @@ class Player:
             return None
         else:
             (change, current, pending) = self._player.get_state()
-            logger.debug("state %s %s %s", change, current, pending)
+            logger.debug("elapsed: state %s %s %s", change, current, pending)
             if current != gst.STATE_NULL:
                 elapsed, format = self._player.query_position(gst.Format(gst.FORMAT_TIME), None)
                 return elapsed / gst.SECOND
             else:
-                logger.debug("bad state %s" % current)
+                logger.debug("elapsed: bad state %s" % current)
                 return None
 
     def _set_internal_state(self,state):
+        oldStatus = self.status
         logger.debug("set internal state for %s"%state)
         if state == gst.STATE_NULL:
             self.status = Status.idle
@@ -100,6 +101,7 @@ class Player:
             self.status = Status.playing
         else:
             raise Exception, state
+        logger.debug("internal state changed from %s to %s", oldStatus, self.status)
 
     def _set_state(self, state):
         with self.state_lock:
@@ -158,5 +160,5 @@ class Player:
             self.newPlayer()
             self.next_track()
 
-        logger.debug(self._player.get_state())
+        logger.debug("state: post-playing %s", self._player.get_state())
 

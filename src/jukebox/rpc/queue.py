@@ -6,8 +6,12 @@ from jukebox.models import QueueItem, MusicFile
 from status_info import status_info
 from helpers import reindex_queue
 
+import logging
+logger = logging.getLogger(__name__)
+
 @jsonrpc_method('enqueue', site=site)
 def enqueue(request, username, tracks, atTop):
+    logger.debug("enqueue: %s", tracks)
     for t in tracks:
         q = QueueItem(who = username, what = MusicFile.objects.get(url=t['url']))
         cached(q.what)
@@ -43,6 +47,7 @@ def clear_queue(request, username):
 
 @jsonrpc_method('get_queue', site=site)
 def get_queue(request):
+    logger.debug("get_queue")
     return status_info(request)
 
 @jsonrpc_method('reorder', site=site)

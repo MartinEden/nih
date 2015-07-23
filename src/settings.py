@@ -115,7 +115,7 @@ TEMPLATE_CONTEXT_PROCESSORS = ("django.contrib.auth.context_processors.auth",
 )
 
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
-NOSE_ARGS = ["--with-coverage", "--cover-package=nih.jukebox, simple_player", "--cover-html", "--cover-html-dir=coverage", "--with-xunit"]
+NOSE_ARGS = ["--with-coverage", "--cover-package=jukebox, simple_player", "--cover-html", "--cover-html-dir=coverage", "--with-xunit"]
 
 LASTFM_USER="test_erlang"
 LASTFM_PASSWORD="test_erlang"
@@ -136,7 +136,7 @@ INSTALLED_APPS = (
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
@@ -155,7 +155,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            #'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
             #'filters': ['require_debug_true'],
             'formatter': 'verbose',
             'class': 'logging.StreamHandler',
@@ -187,12 +187,23 @@ LOGGING = {
         'py.warnings': {
             'handlers': ['console'],
         },
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['console']
+        # },
         'django.db.backends.schema': {
-            'handlers': ['null']
-            #'handlers': ['console']
+             'handlers': ['null']
         },
         'jukebox': {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'handlers': ['console']
+        },
+        'jukebox.rpc': {
+            'level': 'DEBUG',
+            'handlers': ['console']
+        },
+        'simple_player': {
+            'level': 'DEBUG',
             'handlers': ['console']
         }
     }
