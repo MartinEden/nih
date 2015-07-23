@@ -202,6 +202,10 @@ LOGGING = {
             'level': 'DEBUG',
             'handlers': ['console']
         },
+        'jukebox.tests': {
+            'level': 'DEBUG',
+            'handlers': ['console']
+        },        
         'simple_player': {
             'level': 'DEBUG',
             'handlers': ['console']
