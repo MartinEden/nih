@@ -204,7 +204,6 @@ class MainFunctions(JukeboxTest):
 
         self.needs_downloaded()
         (url, _) = self._enqueueRealTrack()
-        sleep(1) # wait for gstreamer to catch up        
         res = self._method("get_queue")
         self.assertEqual(res['paused'], False, res)
         self.assertEqual(res['status'], "caching", res)
