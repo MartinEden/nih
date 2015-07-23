@@ -6,6 +6,7 @@ from jukebox.models import QueueItem, MusicFile
 from status_info import status_info
 from helpers import reindex_queue
 from player import play_current, get_status
+from simple_player import Status
 
 import logging
 logger = logging.getLogger(__name__)
