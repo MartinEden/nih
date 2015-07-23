@@ -29,6 +29,9 @@ def pause(request, shouldPause, username):
         elif player.status == Status.paused:
             player.unpause()
             ChatItem(what="resume", info=current.what, who=username).save()
+        elif player.status == Status.playing and QueueItem.objects.count() == 0:
+            logger.info("Weird playback, as we're playing but there's no queue items, so stopping")
+            player.stop()
     else:
         if player.status == Status.playing:
             player.pause()

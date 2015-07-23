@@ -206,7 +206,7 @@ class MainFunctions(JukeboxTest):
         (url, _) = self._enqueueRealTrack()
         res = self._method("get_queue")
         self.assertEqual(res['paused'], False, res)
-        self.assertEqual(res['status'], "caching", res)
+        self.assertEqual(res['status'], "playing", res)
 
 class ConfigTests(JukeboxTest):
     def testAllRoots(self):
