@@ -22,6 +22,7 @@ def make_audioscrobbler():
         return do_nothing
 
 def next_track():
+    logger.debug("Next track. Count %d, Status %s", QueueItem.objects.count(), player.status)
     if QueueItem.objects.all().count() > 0:
         QueueItem.current().delete() # remove current first item from queue
         player.stop()
