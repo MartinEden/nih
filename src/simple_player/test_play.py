@@ -20,6 +20,6 @@ loop = Looper()
 loop.setDaemon(True)
 loop.start()
 
-player = Player(debug=True)
+player = Player()
 player.play(argv[1])
 sleep(1)

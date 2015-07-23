@@ -2,6 +2,10 @@ from utils import urlopen, URLError, BackgroundTask, registerStartupTask
 from os.path import join
 from models import *
 from simple_player import Status
+from django.conf import settings
+
+import logging
+logger = logging.getLogger(__name__)
 
 class Downloader(BackgroundTask):
     def processItem(self,item):
@@ -19,14 +23,14 @@ class Downloader(BackgroundTask):
     def postProcessItem(self, item):
         from rpc.globals import next_track, player
         from rpc.player import play_current, get_status
-        current = QueueItem.current().what
+        current = QueueItem.current()
         if item.failed:
-            print "item failed", item
+            logger.info("item failed %s", item)
             char = ChatItem(what="failed", info = item)
             char.save()
-            if current == item:
+            if current != None and current.what == item:
                 next_track()
-        elif current == item and get_status() == Status.idle:
+        elif current.what == item and get_status() == Status.idle:
             play_current(player)
     
     def downloads(self):
@@ -34,5 +38,9 @@ class Downloader(BackgroundTask):
             ret = list(self.queue)
             return ret
 
-downloader = registerStartupTask(Downloader)
 
+if settings.TESTING:
+    downloader = Downloader()
+    downloader.setDaemon(True)
+else:
+    downloader = registerStartupTask(Downloader)

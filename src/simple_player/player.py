@@ -4,8 +4,12 @@ import gst
 from enum import Enum
 import threading
 import gobject
-from sys import  stderr
+from sys import stderr
 from os.path import abspath
+from os import environ
+
+import logging
+logger = logging.getLogger(__name__)
 
 class Status(Enum):
     idle = 1
@@ -16,8 +20,7 @@ class StateFailException(Exception):
     pass
 
 class Player:
-    def __init__(self, debug = False):
-        self.debug = debug
+    def __init__(self):
         self.newPlayer()
         bus = self._player.get_bus()
         bus.add_signal_watch()
@@ -29,37 +32,36 @@ class Player:
 
     def newPlayer(self):
         self._player = gst.element_factory_make("playbin", "player")
+        if environ.has_key("GST_AUDIO_SINK"):
+            sink = environ["GST_AUDIO_SINK"]
+            self._sink = gst.element_factory_make(sink, "custom-audio-sink " + sink)
+            self._sink.set_property("sync", True)
+            self._player.set_property("audio-sink", self._sink)
 
     def __del__(self):
         with self.state_lock:
             while self.waiting_for_state_update:
-                if self.debug:
-                    print >>stderr, "waiting for update before deletion"
+                logger.debug("waiting for update before deletion")
                 self.state_lock.wait()
 
     def message_handler(self, bus, message):
         t = message.type
         if t == gst.MESSAGE_EOS:
-            if self.debug:
-                print >>stderr, "end of stream"
+            logger.debug("end of stream")
             self.next_track()
         
         elif t == gst.MESSAGE_ERROR:
             err, debug = message.parse_error()
             if err.domain == gst.STREAM_ERROR and err.code == gst.STREAM_ERROR_CODEC_NOT_FOUND and debug.find("gstplaybin")!=-1:
-                if self.debug:
-                    print >>stderr, "Invalid track, skipping", message
-            elif self.debug:
-                print >>stderr, "error: %s"%err#, err.code, err.domain, err.message
-                print >>stderr, debug
+                logger.info("Invalid track, skipping " + message)
+            else:
+                logger.error("%s %s %s", err.code, err.domain, err.message)
         
         elif t == gst.MESSAGE_STATE_CHANGED:
             if message.src == self._player:
-                if self.debug:
-                    print >>stderr, "message from player"
+                logger.debug("message from player")
                 old, new, pending = message.parse_state_changed()
-                if self.debug:
-                    print >>stderr, "state change", old, new, pending
+                logger.debug("state change %s %s %s"%(old, new, pending))
                 if pending == gst.STATE_VOID_PENDING:
                     with self.state_lock:
                         self._set_internal_state(new)
@@ -67,33 +69,31 @@ class Player:
                             self.waiting_for_state_update = False
                             self.state_lock.notifyAll()
         elif t == gst.MESSAGE_STREAM_STATUS:
-            print "stream status", message
+            logger.debug("stream status %s" % message)
         else:
-            print "unhandled message", t
+            logger.info("unhandled message %s" % t)
 
         return gst.BUS_PASS
 
     def next_track(self):
-        print "next track"
+        logger.debug("next track")
 
     def elapsed(self):
         if self.status == Status.idle:
             return None
         else:
             (change, current, pending) = self._player.get_state()
-            if self.debug:
-                print >>stderr, "state", change, current, pending
+            logger.debug("elapsed: state %s %s %s", change, current, pending)
             if current != gst.STATE_NULL:
                 elapsed, format = self._player.query_position(gst.Format(gst.FORMAT_TIME), None)
                 return elapsed / gst.SECOND
             else:
-                if self.debug:
-                    print >>stderr, "bad state", current
+                logger.debug("elapsed: bad state %s" % current)
                 return None
 
     def _set_internal_state(self,state):
-        if self.debug:
-            print >>stderr, "set internal state for", state
+        oldStatus = self.status
+        logger.debug("set internal state for %s"%state)
         if state == gst.STATE_NULL:
             self.status = Status.idle
         elif state == gst.STATE_PAUSED:
@@ -102,25 +102,23 @@ class Player:
             self.status = Status.playing
         else:
             raise Exception, state
+        logger.debug("internal state changed from %s to %s", oldStatus, self.status)
 
     def _set_state(self, state):
         with self.state_lock:
             while self.waiting_for_state_update:
-                if self.debug:
-                    print >>stderr, "waiting for update"
+                logger.debug("waiting for update")
+                self._player.get_state() # Gstreamer is quantum, and so observation causes state change...
                 self.state_lock.wait()
-            if self.debug:
-                print >>stderr, "got update"
+            logger.debug("got update")
         
         (info, current, _) = self._player.get_state()
         if current == gst.STATE_NULL and state == gst.STATE_PAUSED:
-            if self.debug:
-                print >>stderr, "Can't pause"
+            logger.debug("Can't pause")
         else:
             with self.state_lock:
                 kind = self._player.set_state(state)
-                if self.debug:
-                    print >>stderr, "set state result", state, kind
+                logger.debug("set state result %s %s"%(state, kind))
                 if kind == gst.STATE_CHANGE_ASYNC:
                     self.waiting_for_state_update = True
                 elif kind == gst.STATE_CHANGE_SUCCESS:
@@ -136,47 +134,33 @@ class Player:
             raise StateFailException
 
     def stop(self):
-        if self.debug:
-            print >>stderr, "state: stopping"
-            print >>stderr, self._player.get_state()
+        logger.debug("state: stopping %s", self._player.get_state())
         self._set_state(gst.STATE_NULL)
-        if self.debug:
-            print >>stderr, self._player.get_state()
+        logger.debug(self._player.get_state())
 
     def pause(self):
-        if self.debug:
-            print >>stderr, "state: pausing"
-            print >>stderr, self._player.get_state()
+        logger.debug("state: pausing %s", self._player.get_state())
         self._set_state(gst.STATE_PAUSED)
-        if self.debug:
-            print >>stderr, self._player.get_state()
+        logger.debug(self._player.get_state())
 
     def unpause(self):
-        if self.debug:
-            print >>stderr, "state: pausing"
-            print >>stderr, self._player.get_state()
+        logger.debug("state: unpausing %s", self._player.get_state())
         self._set_state(gst.STATE_PLAYING)
-        if self.debug:
-            print >>stderr, self._player.get_state()
+        logger.debug(self._player.get_state())
 
     def play(self, path):
-        if self.debug:
-            print >>stderr, "state: playing"
-            print >>stderr, self._player.get_state()
+        logger.debug("state: playing %s", self._player.get_state())
         path = abspath(path)
         try:
             self._player.set_property("uri", "file://"+path)
-            if self.debug:
-                print >>stderr, "state: playing (set uri)"
+            logger.debug("state: playing (set uri)")
             self._set_state(gst.STATE_PLAYING)
-            if self.debug:
-                print >>stderr, "now playing", path
+            logger.debug("now playing %s", path)
         except StateFailException:
             self._player.set_state(gst.STATE_NULL)
             self.waiting_for_state_update = False
             self.newPlayer()
             self.next_track()
 
-        if self.debug:
-            print >>stderr, self._player.get_state()
+        logger.debug("state: post-playing %s", self._player.get_state())
 

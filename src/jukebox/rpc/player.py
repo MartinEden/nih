@@ -4,18 +4,22 @@ from globals import site, player, post, play_current
 from jukebox.models import QueueItem, ChatItem
 from simple_player import Status
 from status_info import status_info
+import logging
+
+logger = logging.getLogger(__name__)
 
 @jsonrpc_method('skip', site=site)
 def skip(request, username):
     current = QueueItem.current()
     if current != None:
         ChatItem(what="skip", info = current.what, who=username).save()
-        print "saved item"
+        logger.debug("saved item %s", current.what)
         player.next_track()
     return status_info(request)
 
 @jsonrpc_method('pause', site=site)
 def pause(request, shouldPause, username):
+    logger.debug("pause request: shouldPause %s, queueitems %s, status %s", shouldPause, QueueItem.objects.count(), player.status)
     current = QueueItem.current()
     if not shouldPause:
         if player.status == Status.idle and QueueItem.objects.count()>0:
@@ -25,6 +29,9 @@ def pause(request, shouldPause, username):
         elif player.status == Status.paused:
             player.unpause()
             ChatItem(what="resume", info=current.what, who=username).save()
+        elif player.status == Status.playing and QueueItem.objects.count() == 0:
+            logger.info("Weird playback, as we're playing but there's no queue items, so stopping")
+            player.stop()
     else:
         if player.status == Status.playing:
             player.pause()

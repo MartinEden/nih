@@ -2,6 +2,8 @@ from django.db import models
 from hashlib import md5
 from django.core.signals import request_started
 from utils import runStartupTasks
+import logging
+logger = logging.getLogger(__name__)
 
 class WebPath(models.Model):
     url = models.TextField()
@@ -23,7 +25,7 @@ class WebPath(models.Model):
     def add_root(url):
         wp = WebPath(url = url, root = None)
         wp.save()
-        print "saved root"
+        logger.debug("saved root")
         return wp
 
     def add_child(self, url):

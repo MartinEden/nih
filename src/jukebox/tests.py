@@ -1,14 +1,16 @@
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.test.client import Client
 from jsonrpc._json import loads, dumps
 from uuid import uuid1
-from jukebox.models import *
+from models import *
 from time import sleep
 import utils
 from spider import spider
 from downloader import downloader
+import logging
+logger = logging.getLogger(__name__)
 
-class JukeboxTest(TestCase):
+class JukeboxTest(TransactionTestCase):
     static_path = "http://localhost/static/"
     test_track_path = static_path+"silent-3mins.mp3"
     def _configmethod(self, method, *params, **kwargs):
@@ -30,12 +32,18 @@ class JukeboxTest(TestCase):
 
     def needs_static(self):
         while len(spider.todo())>0:
-            print "spider todo", spider.todo()
+            if not spider.isAlive():
+                logger.info("starting spider")
+                spider.start()
+            logger.info("spider todo %s", spider.todo())
             sleep(.5)
 
     def needs_downloaded(self):
         while len(downloader.todo())>0:
-            print "downloader todo", downloader.todo()
+            if not downloader.isAlive():
+                logger.info("starting downloader")
+                downloader.start()
+            logger.debug("downloader todo %s", downloader.todo())
             sleep(.5)
 
 class MainFunctions(JukeboxTest):
@@ -62,9 +70,9 @@ class MainFunctions(JukeboxTest):
             m.url = url
             m.parent = root
             m.save()
-            print "added test track", url
+            logger.debug("added test track %s", url)
         else:
-            print "test track already present", url
+            logger.debug("test track already present %s", url)
         return url
 
     def _enqueueTestTrack(self, atTop=False):
@@ -135,7 +143,7 @@ class MainFunctions(JukeboxTest):
         (url2, _) = self._enqueueRealTrack()
 
         self.needs_downloaded()
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertNotEqual(res['entry'], None, res)
         self.assertEqual(res['entry']['url'], url, res)
         self.assertEqual(res['paused'], False, res)
@@ -150,23 +158,23 @@ class MainFunctions(JukeboxTest):
     def testPlay(self):
         self.clear_queue()
 
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertEqual(res['entry'], None, res)
         (url, _) = self._enqueueRealTrack()
         self.needs_downloaded()
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertEqual(res['paused'], False, res)
         self.assertEqual(res['status'], "playing", res)
 
     def testNotCachedYet(self):
-        print "starting cache test"
+        logger.debug("starting cache test")
         self.clear_queue()
         downloader.pause()
 
         (url, _) = self._enqueueTestTrack()
         (url2, _) = self._enqueueTestTrack()
 
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertNotEqual(res['entry'], None, res)
         self.assertEqual(res['entry']['url'], url, res)
         res = self._method("skip", "test_user")
@@ -177,9 +185,9 @@ class MainFunctions(JukeboxTest):
 
         downloader.unpause()
 
-    def testGetHostname(self):
-        res = self._method("get_caller_hostname")
-        self.assertEqual(res, "127.0.0.1")
+    def testGetUsername(self):
+        res = self._method("get_username")
+        self.assertEqual(res, "localhost")
 
     def testRandom(self):
         self.needs_static()
@@ -189,17 +197,16 @@ class MainFunctions(JukeboxTest):
 
     def testPlayOnAdd(self): 
         self.clear_queue()
-        res = self._method("pause", False)
+        res = self._method("pause", False, "Foo")
         self.assertEqual(res['status'], "idle", res)
         self.assertEqual(res['entry'], None, res)
         self.assertEqual(res['queue'], [], res)
 
         self.needs_downloaded()
-        sleep(.2) # wait for gstreamer to catch up
-        (url, _) = self._enqueueTestTrack()
+        (url, _) = self._enqueueRealTrack()
         res = self._method("get_queue")
         self.assertEqual(res['paused'], False, res)
-        self.assertEqual(res['status'], "caching", res)
+        self.assertEqual(res['status'], "playing", res)
 
 class ConfigTests(JukeboxTest):
     def testAllRoots(self):
@@ -232,7 +239,7 @@ class ConfigTests(JukeboxTest):
         res = self._configmethod("remove_root", self.static_path)
         self.assertEqual(len(res), rootcount - 1)
         for wp in spider.queue:
-            print "q", wp, wp.root
+            logger.debug("still queued %s %s", wp, wp.root)
         spider.unpause()
         self.needs_static()
 
