@@ -13,3 +13,4 @@ debian/files
 *~
 .publish_path
 target/*
+virtualenv-bootstrap.py
