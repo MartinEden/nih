@@ -34,15 +34,23 @@ def migrate(target):
     _backup(os.path.join(dir, 'db-backup.sql'))
     _sync()
 
-def setup_db():
+def setup_db(username = None, password = None, hostname = None):
     if _database_exists():
         print 'Database already exists, no need for me to create it.'
     else:
-        username = raw_input("Enter your mysql user name (default: root): ") or "root"
+        if username == None:
+            username = raw_input("Enter your mysql user name (default: root): ") or "root"
         sql = "CREATE DATABASE IF NOT EXISTS %(name)s " \
             "DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_bin; " \
             "GRANT ALL ON %(name)s.* TO '%(user)s' IDENTIFIED BY '%(password)s';" % db.__dict__
-        print "Now you will be prompted for the password that goes with that mysql account"
-        sh('mysql', '-u', username, '-p', '-f', '-e', sql)
+        args = ['mysql', '-u', username, '-f', '-e', sql]
+        if password == None:
+            print "Now you will be prompted for the password that goes with that mysql account"
+            args += "-p"
+        else:
+            args.append("--password=%s"%password)
+        if hostname != None:
+            args.extend(["--host", hostname])
+        sh(*args)
         print "Created database %s" % db.name
         _sync()
