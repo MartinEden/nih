@@ -3,6 +3,6 @@ class DbSettings:
         self.name = 'jukebox'
         self.user = 'jukebox'
         self.password = 'jukebox'
-        self.host = ''
+        self.host = 'mysql'
 
 db = DbSettings()
