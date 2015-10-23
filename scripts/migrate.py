@@ -18,11 +18,14 @@ def _sync():
     sh('python', 'src/manage.py', 'syncdb', '--noinput')
     sh('python', 'src/manage.py', 'migrate')
 
-def _database_exists():
+def _database_exists(hostname = None):
     try:
-        sh('mysql', '-u', db.user,
+        args = ['mysql', '-u', db.user,
             '--password=%s' % db.password,
-            '-e', 'use %s' % db.name)
+            '-e', 'use %s' % db.name]
+        if hostname != None:
+            args.extend(["--host", hostname])
+        sh(*args)
     except subprocess.CalledProcessError:
         return False
     return True
@@ -35,7 +38,7 @@ def migrate(target):
     _sync()
 
 def setup_db(username = None, password = None, hostname = None):
-    if _database_exists():
+    if _database_exists(hostname):
         print 'Database already exists, no need for me to create it.'
     else:
         if username == None:
