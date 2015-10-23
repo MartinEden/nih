@@ -2,9 +2,12 @@ nih:
   build: .
   links:
     - mysql
+    - couchdb
   ports:
     - "8001:8000"
 mysql:
   image: mysql
   environment:
     MYSQL_ROOT_PASSWORD: nih
+couchdb:
+  image: frodenas/couchdb
