@@ -1,11 +1,14 @@
 # Django settings for nih project.
 
-import os
+import os, sys
 from utils import site_path
 from db_settings import db
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+DEBUG_PROPAGATE_EXCEPTIONS = DEBUG
+
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -22,10 +25,17 @@ DATABASES = {
         'NAME': db.name,                 # Or path to database file if using sqlite3.
         'USER': db.user,                 # Not used with sqlite3.
         'PASSWORD': db.password,         # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+        'HOST': db.host,                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
+
+import sys
+if 'test' in sys.argv or 'test_coverage' in sys.argv: #Covers regular testing and django-coverage
+    DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
+    DATABASES['default']['NAME'] = site_path('default.db')
+    DATABASES['default']['TEST'] = {'NAME' : site_path('test.db')}
+    DATABASES['default']['OPTIONS'] = {'timeout': 20}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -91,7 +101,7 @@ ROOT_URLCONF = 'urls'
 CACHE_FOLDER = "/tmp/nih-cache"
 
 TEMPLATE_DIRS = (
-    site_path('jukebox/templates')
+    site_path('jukebox/templates'),
 )
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO_URL = 'https://github.com/lshift/nih/'
@@ -105,7 +115,7 @@ TEMPLATE_CONTEXT_PROCESSORS = ("django.contrib.auth.context_processors.auth",
 )
 
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
-NOSE_ARGS = ["--with-coverage", "--cover-package=nih.jukebox, simple_player", "--cover-html", "--cover-html-dir=coverage"]
+NOSE_ARGS = ["--with-coverage", "--cover-package=jukebox, simple_player", "--cover-html", "--cover-html-dir=coverage", "--with-xunit"]
 
 LASTFM_USER="test_erlang"
 LASTFM_PASSWORD="test_erlang"
@@ -120,7 +130,85 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.contenttypes', # only here for the admin
     'jsonrpc',
-    'south',
     'django_nose',
     'jukebox'
 )
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            #'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            #'filters': ['require_debug_true'],
+            'formatter': 'verbose',
+            'class': 'logging.StreamHandler',
+        },
+        'null': {
+            'class': 'logging.NullHandler',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'handlers': ['console'],
+        },
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'py.warnings': {
+            'handlers': ['console'],
+        },
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['console']
+        # },
+        'django.db.backends.schema': {
+             'handlers': ['null']
+        },
+        'jukebox': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'handlers': ['console']
+        },
+        'jukebox.rpc': {
+            'level': 'DEBUG',
+            'handlers': ['console']
+        },
+        'jukebox.tests': {
+            'level': 'DEBUG',
+            'handlers': ['console']
+        },        
+        'simple_player': {
+            'level': 'DEBUG',
+            'handlers': ['console']
+        }
+    }
+}

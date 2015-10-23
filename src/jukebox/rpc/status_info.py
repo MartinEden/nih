@@ -27,7 +27,7 @@ def serialize_queue(queue):
 
 def get_items():
     objects = QueueItem.objects.all()
-    if objects.count():
+    if objects.count() > 0:
         items = serialize_queue(objects)
         itemsMeta = [metadata(x.what) for x in objects]
         return items, itemsMeta

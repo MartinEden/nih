@@ -1,6 +1,8 @@
 from os.path import join, dirname
 import urllib2
 from threading import Thread, Lock, Condition
+import logging
+logger = logging.getLogger(__name__)
 
 client = None
 URLError = urllib2.URLError
@@ -17,7 +19,10 @@ class FakeURLObject:
         return self.url
 
     def read(self):
-        return self.backing.content
+        if self.backing.streaming:
+            return "".join(self.backing.streaming_content)
+        else:
+            return self.backing.content
 
 def urlopen(url):
     try:
@@ -57,7 +62,7 @@ class BackgroundTask(Thread):
                         item = self.queue[0] # don't remove it yet though (still needs to be marked as "caching")
                         break
                     else:
-                        print "waiting", self
+                        logger.debug("waiting %s"% self)
                         self.queueCondition.wait()
 
             self.processItem(item)
@@ -72,7 +77,7 @@ class BackgroundTask(Thread):
     def add(self, item):
         with self.queueCondition:
             self.queue.append(item)
-            print "got item for", self, item, self.paused
+            logger.debug("got item for %s %s %s" %(self, item, self.paused))
             if not self.paused:
                 self.queueCondition.notify()
 
@@ -88,11 +93,11 @@ class BackgroundTask(Thread):
     # for testing purposes only. Make sure you call unpause if you're using pause!
     
     def pause(self):
-        print "pausing", self
+        logger.debug("pausing %s" % self)
         self.paused = True
 
     def unpause(self):
-        print "unpausing", self
+        logger.debug("unpausing %s" % self)
         self.paused = False
         with self.queueCondition:
             self.queueCondition.notify()
@@ -116,7 +121,7 @@ def registerStartupTask(kind):
         startup_tasks.append(task)
         if started:
             task.start()
-            print "already started", task, startup_tasks
+            logger.debug("already started %s %s" %(task, startup_tasks))
     return task
 
 def runStartupTasks(sender, **kwargs):
