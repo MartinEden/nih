@@ -8,6 +8,8 @@ from django.conf import settings
 cacheFolder = settings.CACHE_FOLDER
 
 def is_cached(item):
+    if item == None:
+        return False
     hash = item.hash()
     cacheFile = join(cacheFolder, hash)
     return exists(cacheFile)

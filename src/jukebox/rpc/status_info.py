@@ -27,14 +27,14 @@ def serialize_queue(queue):
 
 def get_items():
     objects = QueueItem.view("jukebox/all_queueitems")
-    if objects.count():
+    if objects.count() > 0:
         items = serialize_queue(objects)
         itemsMeta = [metadata(x.what) for x in objects]
         return items, itemsMeta
     else:
         return [None], [None]
 
-def get_state():    
+def get_state():
     current = QueueItem.current()
     if current!=None and current.what in downloader.downloads():
         return "caching"

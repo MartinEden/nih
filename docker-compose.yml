@@ -1,0 +1,10 @@
+nih:
+  build: .
+  links:
+    - mysql
+  ports:
+    - "8001:8000"
+mysql:
+  image: mysql
+  environment:
+    MYSQL_ROOT_PASSWORD: nih

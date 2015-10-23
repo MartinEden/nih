@@ -3,7 +3,9 @@ from jsonrpc.site import JSONRPCSite
 from models import *
 from utils import urlopen
 from time import time
+import logging
 
+logger = logging.getLogger(__name__)
 site = JSONRPCSite()
 
 @jsonrpc_method("all_roots", site=site)
@@ -37,27 +39,25 @@ def rescan_root(request, root):
             wp.save()
             SpideringPath(url = root).save()
         except Exception, e:
-            print "don't like", root, e
-            print request.META
+            logger.debug("don't like %s %s %s", root, e, request.META)
             result = "failure"
-        
+
     return {
         "result": result,
         "root": root,
         "current_rescans": current_rescans(request)
     }
-        
+
 @jsonrpc_method("remove_root", site=site)
 def remove_root(request, root):
     for x in WebPath.get_root_nodes():
         if x.url == root:
             start = time()
-            print "deleting", root, x
+            logger.debug("deleting %s %s", root, x)
             MusicFile.objects.filter(parent__root = x).delete()
             WebPath.objects.filter(root = x).delete()
             x.delete()
-            print "deleted", time()-start
+            logger.debug("deleted %s", time()-start)
             break
-    
+
     return all_roots(request)
-    

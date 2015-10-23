@@ -4,6 +4,8 @@ from django.core.signals import request_started
 from utils import runStartupTasks
 from couchdbkit.ext.django.schema import *
 from datetime import datetime
+import logging
+logger = logging.getLogger(__name__)
 
 class URLIdDocument(Document):
     def __setattr__(self, key, value):
@@ -45,6 +47,12 @@ class WebPath(URLIdDocument):
     @staticmethod
     def to_spider():
         return WebPath.view("jukebox/to_spider", include_docs = True, classes={None: Document, 'WebPath': WebPath})
+
+    def add_root(url):
+        wp = WebPath(url = url, root = None)
+        wp.save()
+        logger.debug("saved root")
+        return wp
 
     def add_child(self, url):
         wp = WebPath(root = self.get_root(), url = url)
@@ -117,9 +125,8 @@ class QueueItem(Document):
 
     def __unicode__(self):
         return "<Music item %s>"%str(self.what)
-    
+
     class Meta:
         ordering = ["index"]
 
 request_started.connect(runStartupTasks)
-

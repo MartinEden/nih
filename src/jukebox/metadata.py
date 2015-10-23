@@ -14,11 +14,16 @@ from mutagen.asf import ASF
 from xdg import Mime
 import magic
 
-from musicbrainz2.webservice import *
+# Deprecated (see http://musicbrainz.org/doc/python-musicbrainz2). TODO: replace with https://github.com/alastair/python-musicbrainzngs
+#from musicbrainz2.webservice import *
+
 from urllib2 import urlopen
 
 from PIL import Image
 from StringIO import StringIO
+import logging
+
+logger = logging.getLogger(__name__)
 
 debug = False
 
@@ -57,7 +62,7 @@ def get_tags(mime, music_file):
         elif mime in ['audio/x-ms-asf','video/x-ms-asf']:
             tags = ASF(music_file)
         else: # don't have anything better to give the user
-            print "can't find tags for mime type", mime
+            logger.info("can't find tags for mime type %s", mime)
             tags = NullTags()
         return tags
     except HeaderNotFoundError, e:
@@ -124,8 +129,7 @@ def add_tag(tags, metadata, read_name, write_name):
             (tag, _ignore) = tag
 
         metadata[write_name] = tag
-        if debug:
-            print "'%s' '%s'"%(write_name,tag)
+        logger.debug("'%s' '%s'"%(write_name,tag))
         tags[write_name] = tag
 
 def write_albumart(image_tag, metadata, tags):
@@ -143,7 +147,7 @@ def write_albumart(image_tag, metadata, tags):
         try:
             r = q.getReleases(rf)
             if len(r) == 0:
-                print "no such release"
+                logger.info("no such release")
                 return
             r = r[0].getRelease()
             if r.getAsin() != None:
@@ -152,10 +156,10 @@ def write_albumart(image_tag, metadata, tags):
                 url = "http://ec1.images-amazon.com"+ AMAZON_IMAGE_PATH % (asin, '01', 'L')
                 image_tag = urlopen(url).read()
             else:
-                print "no asin"
+                logger.info("no asin")
                 return
         except ConnectionError:
-            print "issue connecting to Musicbrainz"
+            logger.warn("issue connecting to Musicbrainz")
             return
 
     image_file = cache_base + ".jpeg"
@@ -178,9 +182,7 @@ def write_albumart(image_tag, metadata, tags):
 def get_good_mime(music_file):
     mime = Mime.get_type_by_contents(music_file)
     if mime == None: # try magic instead
-        mime = magic.open(magic.MAGIC_MIME)
-        mime.load()
-        mime = mime.file(music_file)
+        mime = magic.from_file(music_file, mime = True)
         mime = mime.split(";")[0]
     else:
         mime = str(mime)

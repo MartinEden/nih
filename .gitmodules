@@ -1,6 +1,6 @@
 [submodule "src/ext/django-json-rpc"]
 	path = src/ext/django-json-rpc
-	url = git://github.com/palfrey/django-json-rpc.git
+	url = git://github.com/samuraisam/django-json-rpc.git
 [submodule "src/ext/pyscrobbler"]
 	path = src/ext/pyscrobbler
 	url = git://github.com/offmessage/pyscrobbler.git

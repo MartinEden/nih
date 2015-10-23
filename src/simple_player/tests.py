@@ -1,5 +1,7 @@
 from player import Player
 import unittest
+import threading
+import gobject
 
 class Looper(threading.Thread):
     def __init__(self):
@@ -16,7 +18,7 @@ class Looper(threading.Thread):
 class TestPlayer(unittest.TestCase):
     fname = "../jukebox/static/silent-3mins.mp3"
     loop = None
-    player = Player(debug=True)
+    player = Player()
 
     def __init__(self, *args):
         unittest.TestCase.__init__(self, *args)
