@@ -12,6 +12,7 @@ RUN apk add --update mysql-client \
 	build-base \
 	py-libxml2 \
 	file \
+	uwsgi-python \
 	&& rm -rf /var/cache/apk/*
 
 # Replace with package when available
@@ -25,6 +26,6 @@ COPY src/ /nih/src
 COPY scripts/ /nih/scripts
 COPY docker_db_settings.py /nih/src/db_settings.py
 
-EXPOSE 8000
+EXPOSE 8888
 
-CMD python scripts/setupdb.py root nih mysql && python src/manage.py runserver 0.0.0.0:8000
+CMD python scripts/setupdb.py root nih mysql && uwsgi --plugins /usr/lib/uwsgi/python_plugin.so --http-socket :8888 --wsgi-file src/wsgi.py --master --enable-threads --static-map /admin/login/admin=/usr/lib/python2.7/site-packages/django/contrib/admin/static/admin

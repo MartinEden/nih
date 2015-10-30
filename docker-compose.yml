@@ -3,7 +3,7 @@ nih:
   links:
     - mysql
   ports:
-    - "8001:8000"
+    - "8888:8888"
 mysql:
   image: mysql
   environment:
