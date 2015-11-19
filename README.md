@@ -46,3 +46,14 @@ You can then develop using the Django development server, or deploy to Apache as
 
 ## Scrobbling
 This is disabled by default. You can enable it by changing `settings.LASTFM_ENABLED` to true. There are credentials for a Last.fm 'test_erlang' account in the settings file.
+
+## Raspberry PI
+
+Additional things needed to get it working on a Raspberry PI (with HiFiBerry):
+ * Install runit, and copy the files in runit-jackd to /etc/supervise/jackd -- gstreamer doesn't like the alsa device presentation here, so it ... doesn't work.
+ * Add the following to `/boot/config.txt` to get the HiFiBerry + jackd working:
+
+```
+dtoverlay=hifiberry-dacplus
+dtoverlay=i2s-mmap
+```
