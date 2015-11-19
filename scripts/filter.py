@@ -8,6 +8,7 @@ patterns = [
     r"src/my.cnf$",  
     # General rules
     r"src/.+\.py$",
+    r"ENV/.+\.py$",
     r"src/jukebox/templates/.+\.xml",
     r"src/jukebox/static/.+\.(js|css|ico|png|jpg|jpeg|gif|xcf)"
 ]

@@ -1,7 +1,11 @@
 import os, sys
-sys.path.append('/usr/share/nih/current/src')
+dir = os.path.dirname(__file__)
+activate_this = os.path.join(dir, '../ENV/bin/activate_this.py')
+execfile(activate_this, dict(__file__=activate_this))
+
+sys.path.append(os.path.join(dir))
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
-import django.core.handlers.wsgi
-
-application = django.core.handlers.wsgi.WSGIHandler()
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()

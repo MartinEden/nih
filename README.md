@@ -7,6 +7,7 @@ Not Invented Here (a jukebox)
 * `git clone https://github.com/lshift/nih.git`
 * `./scripts/bootstrap.sh` (which will use `sudo` internally to get root)
 * `sudo python scripts/deploy.py`
+* or `sudo bash -c "source $PWD/ENV/bin/activate && python scripts/deploy.py --no-wait"`
 
 This will create `/usr/share/nih`, and an Apache site pointing at the most recently deployed version. Default port is 8888, for historical reasons.
 
