@@ -13,3 +13,4 @@ python-magic==0.4.6
 pyxdg==0.25
 requests==2.6.0
 socketpool==0.5.3
+six==1.9.0

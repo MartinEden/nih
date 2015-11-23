@@ -9,6 +9,8 @@ if [ ! -d "ENV" ]; then
 fi
 
 source "$(pwd)/ENV/bin/activate"
+pip install --upgrade -r scripts/requirements.txt --allow-all-external --allow-unverified PIL
+
 python scripts/setupdb.py
 echo ""
 echo "Bootstrapped successfully"

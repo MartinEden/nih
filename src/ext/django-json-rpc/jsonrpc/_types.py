@@ -32,19 +32,12 @@ class Type(type):
         type.__init__(self, *args, **kwargs)
 
     def __eq__(self, other):
-        if six.PY2:
-            for T in _types_gen(self):
-                if isinstance(other, Type):
-                    if T in other.t:
-                        return True
-                if type.__eq__(T, other):
+        for T in _types_gen(self):
+            if isinstance(other, Type):
+                if T in other.t:
                     return True
-        elif six.PY3:
-            for T in _types_gen(self):
-                if isinstance(other, Type) and T in other.t:
-                    return True
-                elif other in _basetypes(T):
-                    return True
+            if type.__eq__(T, other):
+                return True
         return False
 
     def __str__(self):
@@ -74,8 +67,7 @@ class Type(type):
 
 
 str_types = (six.text_type, )
-if six.PY2:
-    str_types += (six.binary_type, )
+str_types += (six.binary_type, )
 num_types = six.integer_types + (float, )
 
 # JSON primitives and data types
