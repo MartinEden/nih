@@ -121,6 +121,8 @@ LASTFM_USER="test_erlang"
 LASTFM_PASSWORD="test_erlang"
 LASTFM_ENABLED=False
 
+MIXER_CONTROL='Digital'
+
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 INSTALLED_APPS = (
