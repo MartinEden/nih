@@ -45,6 +45,7 @@ class Player:
                 self.state_lock.wait()
 
     def message_handler(self, bus, message):
+        logger.debug("Received GST message: %s", message)
         t = message.type
         if t == gst.MESSAGE_EOS:
             logger.debug("end of stream")
